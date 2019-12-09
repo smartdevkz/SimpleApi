@@ -22,8 +22,6 @@ class Feather
 
     public function run()
     {
-        //echo 'Feather run():';
-
         $origin = $this->getOrigin();
         //echo '<br/>origin: ' . $origin;
 
@@ -35,24 +33,24 @@ class Feather
 
         $action = $this->getAction($path, $controller);
 
-
         try {
             $app = $this;
-            if (!empty($controller)) {
-                $success = include('controllers/' . $controller . 'Controller.php');
-                if (!$success) {
-                    $success = include('controllers/Controller.php');
-                    $action = $controller;
-                }
-            } else $success = include('controllers/Controller.php');
+            include('controllers/Controller.php');
+            if (!empty($controller)) $hasController = include('controllers/' . $controller . 'Controller.php');
 
             $requestType = strtolower($_SERVER['REQUEST_METHOD']);
-            $action = $requestType . $action;
-            //echo '<br/>action: ' . $action;
-            $res = $this->actions[$action]();
-            $this->response($res);
+
+            $action = $hasController?$requestType . $action:$requestType . $controller;
+
+            if (array_key_exists($action, $this->actions)) {
+                $res = $this->actions[$action]();
+                $this->response($res);
+            } else {
+                throw new Exception("method was not found!");
+            }
         } catch (Exception $ex) {
             //return "error: "+$ex->getMessage();
+            $this->response($ex->getMessage());
         }
     }
 

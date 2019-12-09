@@ -6,6 +6,7 @@ header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods:GET, POST, PUT, DELETE, OPTIONS");
 header("Content-Type:application/json");
 //header('Content-Type: text/html');
+require_once 'config/config.php';
 require_once 'include/Feather.php';
 
 $app = Feather::getInstance();

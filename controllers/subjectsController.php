@@ -1,11 +1,9 @@
 <?php
-require_once 'Slim.php';
 
-$app = new Slim();
+require_once 'include/DbManager.php';
 
-$app->get('index',function(){
-    echo "get index";
+$app->get('/',function(){
+    return getAll("select * from subjects");
 });
 
-$app->run();
 ?>
