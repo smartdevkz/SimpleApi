@@ -2,35 +2,42 @@
 
 class Feather
 {
-
+    private static $instance = null;
     private $route;
-    private $actions;
+    private $actions = array();
 
     function __construct()
     {
         $this->actions = array();
     }
 
+    public static function getInstance()
+    {
+        if (self::$instance == null) {
+            self::$instance = new Feather();
+        }
+
+        return self::$instance;
+    }
+
     public function run()
     {
-        echo 'Feather run():';
+        //echo 'Feather run():';
 
         $origin = $this->getOrigin();
-        echo '<br/>origin: ' . $origin;
+        //echo '<br/>origin: ' . $origin;
 
         $path = $this->getPath($origin);
-        echo '<br/>path: ' . $path;
+        //echo '<br/>path: ' . $path;
 
         $controller = $this->getController($path);
-        echo '<br/>controller: ' . $controller;
+        //echo '<br/>controller: ' . $controller;
 
         $action = $this->getAction($path, $controller);
 
 
-        //if (empty($name)) return version();
         try {
-            //include('controllers/' . $name . 'Controller.php');
-            //include('controllers/Controller.php');
+            $app = $this;
             if (!empty($controller)) {
                 $success = include('controllers/' . $controller . 'Controller.php');
                 if (!$success) {
@@ -41,7 +48,7 @@ class Feather
 
             $requestType = strtolower($_SERVER['REQUEST_METHOD']);
             $action = $requestType . $action;
-            echo '<br/>action: ' . $action;
+            //echo '<br/>action: ' . $action;
             $res = $this->actions[$action]();
             $this->response($res);
         } catch (Exception $ex) {
@@ -108,8 +115,8 @@ class Feather
 
     function trim($str)
     {
-        $str = ltrim($str,'/');
-        $str = rtrim($str,'/');
+        $str = ltrim($str, '/');
+        $str = rtrim($str, '/');
         return $str;
     }
 }
