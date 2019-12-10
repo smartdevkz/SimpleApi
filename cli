@@ -1,9 +1,29 @@
 <?php
 
-    print "$argc arguments were passed. In order: \n";
+    //print "$argc arguments were passed. In order: \n";
 
     for ($i = 0; $i <= $argc -1; ++$i) {
         print "$i: $argv[$i]\n";
     }
 
+    $commandArr = explode(':',$argv[1]);
+    $command = $commandArr[0];
+    $commandArg = $commandArr[0];
+
+    if($command=="make"){
+        if($commandArg="controller"){
+            $controllerName = $argv[2];
+            $tableName = explode('=',$argv[3])[1];
+            generateController($controllerName,$tableName);
+        }
+    }
+
+    function generateController($name, $tableName){
+        echo $name.' '.$tableName;
+        $txt =  file_get_contents('include/controller.txt');
+        $txt = str_replace('{{tablename}}',$tableName,$txt);
+        $file = fopen('controllers/'.$name.'.php', "w");
+        fwrite($file, $txt);
+        fclose($file);
+    }
 ?>
