@@ -1,0 +1,14 @@
+{
+    "name": "ereke_enu/feather",
+    "description": "Yet another faster way to generate CRUD api",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Yerlan Karakulov",
+            "email": "ereke_enu@mail.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
