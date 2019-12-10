@@ -3,11 +3,11 @@
 class DbManager
 {
 
-    private $conn;
+    public $conn;
 
     function __construct()
     {
-        $this->conn = $this->connect();
+        $this->connect();
     }
 
     function connect(){

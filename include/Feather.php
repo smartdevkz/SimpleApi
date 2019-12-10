@@ -1,4 +1,5 @@
 <?php
+require_once 'include\Route.php';
 
 class Feather
 {
@@ -22,17 +23,14 @@ class Feather
 
     public function run()
     {
-        $origin = $this->getOrigin();
-        //echo '<br/>origin: ' . $origin;
+        $this->route = new Route();
+        $this->route->run();
 
-        $path = $this->getPath($origin);
-        //echo '<br/>path: ' . $path;
+        $controller = $this->route->controller;
+        $action = $this->route->action;
+        $id = $this->route->id;
 
-        $controller = $this->getController($path);
-        //echo '<br/>controller: ' . $controller;
-
-        $action = $this->getAction($path, $controller);
-
+        //var_dump($this->route);
         try {
             $app = $this;
             include('controllers/Controller.php');
@@ -40,10 +38,17 @@ class Feather
 
             $requestType = strtolower($_SERVER['REQUEST_METHOD']);
 
-            $action = $hasController?$requestType . $action:$requestType . $controller;
+            $action = $hasController ? $requestType . $action : $requestType . $controller;
+            if ($id) $action = $action . ':id';
 
+            //echo "action=$action";
+
+            // print_r(array_keys($this->actions));
             if (array_key_exists($action, $this->actions)) {
-                $res = $this->actions[$action]();
+                $obj = json_decode(file_get_contents('php://input'));
+                $params = array();
+                if ($id) $params['id'] = $id;
+                $res = $this->actions[$action]($params, $obj);
                 $this->response($res);
             } else {
                 throw new Exception("method was not found!");
@@ -54,9 +59,34 @@ class Feather
         }
     }
 
-    function get($action, $f)
+    function get($route, $f)
     {
+        $action = $this->trim($route);
+        if (strpos($action, '/') !== false) {
+            $arr = explode('/', $action);
+            $action = $arr[0] . 'id';
+        }
         $this->actions['get' . $this->trim($action)] = $f;
+    }
+
+    function put($route, $f)
+    {
+        $action = $this->trim($route);
+        if (strpos($action, '/') !== false) {
+            $arr = explode('/', $action);
+            $action = $arr[0] . 'id';
+        }
+        $this->actions['put' . $this->trim($action)] = $f;
+    }
+
+    function delete($route, $f)
+    {
+        $action = $this->trim($route);
+        if (strpos($action, '/') !== false) {
+            $arr = explode('/', $action);
+            $action = $arr[0] . 'id';
+        }
+        $this->actions['delete' . $this->trim($action)] = $f;
     }
 
     function post($action, $f)
