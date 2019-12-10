@@ -66,7 +66,7 @@ class DbManager
 }
 
 function log_msg($message){
-    error_log($message."<br/>", 3, 'log.html');
+    error_log($message."\n", 3, 'log.txt');
 }
 
 ?>
