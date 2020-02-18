@@ -47,6 +47,7 @@ class Feather
             if (array_key_exists($action, $this->actions)) {
                 $obj = json_decode(file_get_contents('php://input'));
                 $params = array();
+                parse_str($_SERVER['QUERY_STRING'], $params); 
                 if ($id) $params['id'] = $id;
                 $res = $this->actions[$action]($params, $obj);
                 $this->response($res);
