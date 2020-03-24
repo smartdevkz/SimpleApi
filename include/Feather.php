@@ -1,5 +1,6 @@
 <?php
-require_once 'include\Route.php';
+require_once 'include/Route.php';
+require_once 'include/constants.php';
 
 class Feather
 {
@@ -33,30 +34,29 @@ class Feather
         //var_dump($this->route);
         try {
             $app = $this;
-            include('controllers/Controller.php');
-            if (!empty($controller)) $hasController = include('controllers/' . $controller . 'Controller.php');
+            require_once('controllers/Controller.php');
 
+            if (!empty($controller)) $hasController = include('controllers/' . ucfirst($controller) . 'Controller.php');
+            
             $requestType = strtolower($_SERVER['REQUEST_METHOD']);
 
             $action = $hasController ? $requestType . $action : $requestType . $controller;
             if ($id) $action = $action . ':id';
 
-            //echo "action=$action";
-
+            if ($hasController) validateToken();
             // print_r(array_keys($this->actions));
             if (array_key_exists($action, $this->actions)) {
                 $obj = json_decode(file_get_contents('php://input'));
                 $params = array();
-                parse_str($_SERVER['QUERY_STRING'], $params); 
+                parse_str($_SERVER['QUERY_STRING'], $params);
                 if ($id) $params['id'] = $id;
                 $res = $this->actions[$action]($params, $obj);
-                $this->response($res);
+                $this->success($res);
             } else {
                 throw new Exception("method was not found!");
             }
         } catch (Exception $ex) {
-            //return "error: "+$ex->getMessage();
-            $this->response($ex->getMessage());
+            $this->error($ex->getMessage());
         }
     }
 
@@ -95,10 +95,20 @@ class Feather
         $this->actions['post' . $this->trim($action)] = $f;
     }
 
-    function response($obj)
+    function success($obj)
     {
-        $json_response = json_encode($obj);
-        echo $json_response;
+        $response['status'] = 'success';
+        $response["data"] = $obj;
+        echo json_encode($response);
+    }
+
+    function error($msg)
+    {
+        $response['status'] = 'error';
+        $response["message"] = $msg;
+        if (http_response_code() == 200)
+            http_response_code(500);
+        echo json_encode($response);
     }
 
     function getOrigin()

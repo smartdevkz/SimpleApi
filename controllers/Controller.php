@@ -1,105 +1,70 @@
 <?php
-
-$app->get('about', function () {
-    return 'get about function();';
-});
+require_once 'include/DB.php';
+require_once 'include/jwt.php';
 
 function getAll($sql, $params = null)
 {
-    $response = array();
-    $db = new DbManager();
-    $result = $db->getRows($sql, $params);
-    if (is_a($result, 'PDOException')) {
-        $response['status'] = 'error';
-        $response["message"] = $result->getMessage();
-    } else {
-        $response['status'] = 'success';
-        $response["data"] = $result;
-    }
-    return $response;
+    $db = DB::getInstance();
+    return $db->getRows($sql, $params);
 }
 
 function getOne($sql, $params = null)
 {
-    $response = array();
-    $db = new DbManager();
-    $result = $db->getRow($sql, $params);
-    if (is_a($result, 'PDOException')) {
-        $response['status'] = 'error';
-        $response["message"] = $result->getMessage();
-    } else {
-        $response['status'] = 'success';
-        $response["data"] = $result;
-    }
-
-    return $result;
+    $db = DB::getInstance();
+    return $db->getRow($sql, $params);
 }
 
 function createObject($table_name, $obj, $params = null)
 {
-    try {
-        if (!$obj && $obj == null) throw new Exception("Body can not be null");
-        $fieldStr = getFieldStr($obj);
-        $paramStr = getParamStr($obj);
-        $sql = "INSERT INTO $table_name($fieldStr) VALUES($paramStr)";
-        $db = new DbManager();
-        $stmt = $db->conn->prepare($sql);
-        foreach (explode(',', $fieldStr) as $field) {
-            $stmt->bindParam(":$field", $obj->$field);
-        }
-        $stmt->execute();
-        return true;
-    } catch (Exception $ex) {
-        echo '{"error":{"text":' . $ex->getMessage() . '}}';
-        return $ex;
+
+    if (!$obj && $obj == null) throw new Exception("Body can not be null");
+    $fieldStr = getFieldStr($obj);
+    $paramStr = getParamStr($obj);
+    $sql = "INSERT INTO $table_name($fieldStr) VALUES($paramStr)";
+    $db = DB::getInstance();
+    $stmt = $db->conn->prepare($sql);
+    foreach (explode(',', $fieldStr) as $field) {
+        $stmt->bindParam(":$field", $obj->$field);
     }
+    $stmt->execute();
+    return true;
 }
-
-
 
 function updateObject($table_name, $criteria, $params = null, $obj)
 {
     if (!empty($criteria)) $criteria = ' WHERE ' . $criteria;
     $updateStr = getUpdateStr($obj);
-    try {
-        $fields = array_keys((array) $obj);
-        $sql = "UPDATE $table_name SET $updateStr" . $criteria;
-        $db = new DbManager();
-        $stmt = $db->conn->prepare($sql);
-        foreach ($fields as $field) {
-            $stmt->bindParam(":$field", $obj->$field);
-        }
-        foreach (array_keys($params) as $field) {
-            $stmt->bindParam(":$field", $params[$field]);
-        }
-        $stmt->execute();
-        return true;
-    } catch (Exception $ex) {
-        echo '{"error":{"text":' . $ex->getMessage() . '}}';
-        return $ex;
+
+    $fields = array_keys((array) $obj);
+    $sql = "UPDATE $table_name SET $updateStr" . $criteria;
+    $db = DB::getInstance();
+    $stmt = $db->conn->prepare($sql);
+    foreach ($fields as $field) {
+        $stmt->bindParam(":$field", $obj->$field);
     }
+    foreach (array_keys($params) as $field) {
+        $stmt->bindParam(":$field", $params[$field]);
+    }
+    $stmt->execute();
+    return true;
 }
 
 function deleteObject($table_name, $criteria, $params = null, $obj)
 {
     if (!empty($criteria)) $criteria = ' WHERE ' . $criteria;
-    try {
-        $fields = array_keys((array) $obj);
-        $sql = "DELETE FROM $table_name" . $criteria;
-        $db = new DbManager();
-        $stmt = $db->conn->prepare($sql);
-        foreach ($fields as $field) {
-            $stmt->bindParam(":$field", $obj->$field);
-        }
-        foreach (array_keys($params) as $field) {
-            $stmt->bindParam(":$field", $params[$field]);
-        }
-        $stmt->execute();
-        return true;
-    } catch (Exception $ex) {
-        echo '{"error":{"text":' . $ex->getMessage() . '}}';
-        return $ex;
+
+    $fields = array_keys((array) $obj);
+    $sql = "DELETE FROM $table_name" . $criteria;
+    $db = DB::getInstance();
+    $stmt = $db->conn->prepare($sql);
+    foreach ($fields as $field) {
+        $stmt->bindParam(":$field", $obj->$field);
     }
+    foreach (array_keys($params) as $field) {
+        $stmt->bindParam(":$field", $params[$field]);
+    }
+    $stmt->execute();
+    return true;
 }
 
 function getFieldStr($obj)
@@ -120,3 +85,61 @@ function getUpdateStr($obj)
         return $a . '=:' . $a;
     }, array_keys((array) $obj)));
 }
+
+function getBearerToken()
+{
+    $headers = getAuthorizationHeader();
+    // HEADER: Get the access token from the header
+    if (!empty($headers)) {
+        if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+            return $matches[1];
+        }
+    }
+    throw new Exception('Access Token Not found');
+}
+
+function getAuthorizationHeader()
+{
+    $headers = null;
+    if (isset($_SERVER['Authorization'])) {
+        $headers = trim($_SERVER["Authorization"]);
+    } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+        $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+    } elseif (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+        $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+        if (isset($requestHeaders['Authorization'])) {
+            $headers = trim($requestHeaders['Authorization']);
+        }
+    }
+    return $headers;
+}
+
+function validateToken()
+{
+    $token = getBearerToken();
+    $payload = JWT::decode($token, SECRETE_KEY, ['HS256']);
+    return $payload;
+}
+
+$app->post('generateToken', function ($params, $obj) {
+    $email = $obj->email;
+    $password = $obj->password;
+    unset($obj->password);
+    $user = getOne("select * from users where email=:email", $obj);
+    if (password_verify($password, $user->password)) {
+
+        $paylod = [
+            'iat' => time(),
+            'iss' => 'localhost',
+            'exp' => time() + (15 * 60),
+            'userId' => $user->id
+        ];
+
+        $token = JWT::encode($paylod, SECRETE_KEY);
+        return $token;
+    } else {
+        throw new Exception('Login failed');
+    }
+});

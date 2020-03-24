@@ -1,14 +1,14 @@
 <?php
 
-require_once 'include/DbManager.php';
+require_once 'include/DB.php';
 
 $app->get('/', function ($params, $obj) {
     return getAll("select * from {{tablename}}");
 });
 
 $app->post('/', function ($params, $obj) {
-    $res = createObject("{{tablename}}", $obj);
-    return $res;
+    return createObject("{{tablename}}", $obj);
+    
 });
 
 
