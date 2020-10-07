@@ -1,6 +1,6 @@
 <?php
 require_once 'include/DB.php';
-require_once 'include/jwt.php';
+require_once 'include/JWT.php';
 
 function getAll($sql, $params = null)
 {
