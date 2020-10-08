@@ -1,5 +1,5 @@
 {
-    "name": "ereke_enu/feather",
+    "name": "ereke_enu/SimpleApi",
     "description": "Yet another faster way to generate CRUD api",
     "type": "project",
     "license": "MIT",
@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Feather\\": "Feather"
+            "SimpleApi\\": "SimpleApi"
         }
     },
     "minimum-stability": "dev",
