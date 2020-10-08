@@ -1,6 +1,6 @@
 <?php
 
-require_once 'include/DB.php';
+require_once __DIR__.'/../include/DB.php';
 
 $app->get('/', function ($params, $obj) {
     return getAll("select * from {{tablename}}");

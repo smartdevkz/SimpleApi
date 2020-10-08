@@ -1,6 +1,6 @@
 <?php
-require_once 'include/Route.php';
-require_once 'include/constants.php';
+require_once 'Route.php';
+require_once 'constants.php';
 
 class Feather
 {
