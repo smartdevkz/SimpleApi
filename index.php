@@ -9,7 +9,7 @@ header("Content-Type:application/json");
 require_once 'config.php';
 require_once 'include/Feather.php';
 
-$app = Feather::getInstance();
+$app = new Feather();
 
 $app->get('/', function(){
     return 'Simple API via Feather!!!';

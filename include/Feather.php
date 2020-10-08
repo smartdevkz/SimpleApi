@@ -13,15 +13,6 @@ class Feather
         $this->actions = array();
     }
 
-    public static function getInstance()
-    {
-        if (self::$instance == null) {
-            self::$instance = new Feather();
-        }
-
-        return self::$instance;
-    }
-
     public function run()
     {
         $this->route = new Route();
@@ -43,7 +34,7 @@ class Feather
             $action = $hasController ? $requestType . $action : $requestType . $controller;
             if ($id) $action = $action . ':id';
 
-            if ($hasController) validateToken();
+            //if ($hasController) validateToken();
             // print_r(array_keys($this->actions));
             if (array_key_exists($action, $this->actions)) {
                 $obj = json_decode(file_get_contents('php://input'));
