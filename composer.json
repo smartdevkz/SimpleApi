@@ -3,12 +3,18 @@
     "description": "Yet another faster way to generate CRUD api",
     "type": "library",
     "license": "MIT",
+    "homepage": "https://www.smartdev.kz",
     "authors": [
         {
             "name": "Yerlan Karakulov",
-            "email": "ereke_enu@mail.ru"
+            "email": "smartdevkz@mail.ru"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Feather\\": "Feather"
+        }
+    },
     "minimum-stability": "stable",
     "require": {}
 }
