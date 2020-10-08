@@ -1,14 +1,11 @@
 <?php
 
-require_once __DIR__.'/../include/DB.php';
-
 $app->get('/', function ($params, $obj) {
     return getAll("select * from {{tablename}}");
 });
 
 $app->post('/', function ($params, $obj) {
-    return createObject("{{tablename}}", $obj);
-    
+    return createObject("{{tablename}}", $obj); 
 });
 
 

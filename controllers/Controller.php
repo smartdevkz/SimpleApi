@@ -1,6 +1,7 @@
 <?php
-require_once 'include/DB.php';
-require_once 'include/JWT.php';
+
+require_once __DIR__.'/../include/DB.php';
+require_once __DIR__.'/../include/JWT.php';
 
 function getAll($sql, $params = null)
 {
@@ -16,7 +17,6 @@ function getOne($sql, $params = null)
 
 function createObject($table_name, $obj, $params = null)
 {
-
     if (!$obj && $obj == null) throw new Exception("Body can not be null");
     $fieldStr = getFieldStr($obj);
     $paramStr = getParamStr($obj);
