@@ -1,7 +1,7 @@
 {
     "name": "ereke_enu/feather",
     "description": "Yet another faster way to generate CRUD api",
-    "type": "library",
+    "type": "project",
     "license": "MIT",
     "homepage": "https://www.smartdev.kz",
     "authors": [
