@@ -28,7 +28,6 @@ class DB
 
     function getRows($sql, $params)
     {
-        log_msg($sql);
         $stmt = $this->conn->prepare($sql);
         if ($params) {
             foreach ($params as $key => $value) {
@@ -41,7 +40,6 @@ class DB
 
     function getRow($sql, $params)
     {
-        log_msg($sql);
         $stmt = $this->conn->prepare($sql);
         if ($params) {
             foreach ($params as $key => $value) {
