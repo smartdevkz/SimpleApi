@@ -1,7 +1,7 @@
 Examples: 
 
 Generating a controller from db table:
-php cli make:controller UserController —user-table=users
+php cli make:controller UserController --table-name=users
 
 
 Using get params: 
