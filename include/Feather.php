@@ -20,27 +20,21 @@ class Feather
 
         $controller = $this->route->controller;
         $action = $this->route->action;
-        $id = $this->route->id;
 
-        //var_dump($this->route);
         try {
             $app = $this;
+
             require_once('controllers/Controller.php');
 
-            if (!empty($controller)) $hasController = include('controllers/' . ucfirst($controller) . 'Controller.php');
-            
-            $requestType = strtolower($_SERVER['REQUEST_METHOD']);
+            $hasController = !empty($controller) && include($this->getControllerFileName($controller));
 
-            $action = $hasController ? $requestType . $action : $requestType . $controller;
+            $action = $this->getRequestType() . ($hasController ?  $action : $controller);
+
             if ($id) $action = $action . ':id';
 
-            //if ($hasController) validateToken();
-            // print_r(array_keys($this->actions));
             if (array_key_exists($action, $this->actions)) {
-                $obj = json_decode(file_get_contents('php://input'));
-                $params = array();
-                parse_str($_SERVER['QUERY_STRING'], $params);
-                if ($id) $params['id'] = $id;
+                $obj = $this->getSentData();
+                $params = $this->getQueryParams();
                 $res = $this->actions[$action]($params, $obj);
                 $this->success($res);
             } else {
@@ -49,6 +43,30 @@ class Feather
         } catch (Exception $ex) {
             $this->error($ex->getMessage());
         }
+    }
+
+    function getSentData()
+    {
+        return json_decode(file_get_contents('php://input'));
+    }
+
+    function getQueryParams()
+    {
+        $params = array();
+        parse_str($_SERVER['QUERY_STRING'], $params);
+        $id = $this->route->id;
+        if ($id) $params['id'] = $id;
+        return $params;
+    }
+
+    function getRequestType()
+    {
+        return strtolower($_SERVER['REQUEST_METHOD']);
+    }
+
+    function getControllerFileName($name)
+    {
+        return 'controllers/' . ucfirst($name) . 'Controller.php';
     }
 
     function get($route, $f)
