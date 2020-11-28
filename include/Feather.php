@@ -20,6 +20,7 @@ class Feather
 
         $controller = $this->route->controller;
         $action = $this->route->action;
+        $id = $this->route->id;
 
         try {
             $app = $this;
@@ -31,15 +32,20 @@ class Feather
             $action = $this->getRequestType() . ($hasController ?  $action : $controller);
 
             if ($id) $action = $action . ':id';
-
+            
+            $isSuccesss = false;
             if (array_key_exists($action, $this->actions)) {
                 $obj = $this->getSentData();
                 $params = $this->getQueryParams();
                 $res = $this->actions[$action]($params, $obj);
                 $this->success($res);
+                $isSuccesss = true;
             } else {
                 throw new Exception("method was not found!");
             }
+
+            return 200;
+
         } catch (Exception $ex) {
             $this->error($ex->getMessage());
         }
@@ -109,6 +115,7 @@ class Feather
         $response['status'] = 'success';
         $response["data"] = $obj;
         echo json_encode($response);
+        return 200;
     }
 
     function error($msg)

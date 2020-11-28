@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__.'/../include/DB.php';
-require_once __DIR__.'/../include/JWT.php';
+require_once __DIR__.'/../include/jwt.php';
 
 function getAll($sql, $params = null)
 {
@@ -27,7 +27,8 @@ function createObject($table_name, $obj, $params = null)
         $stmt->bindParam(":$field", $obj->$field);
     }
     $stmt->execute();
-    return true;
+    $lastId = $db->conn->lastInsertId();
+    return getOne("select * from journal where id=$lastId");
 }
 
 function updateObject($table_name, $criteria, $params = null, $obj)
@@ -133,12 +134,35 @@ $app->post('generateToken', function ($params, $obj) {
         $paylod = [
             'iat' => time(),
             'iss' => 'localhost',
-            'exp' => time() + (15 * 60),
+            'exp' => time() + (10*24*60 * 60),
             'userId' => $user->id
         ];
 
         $token = JWT::encode($paylod, SECRETE_KEY);
         return $token;
+    } else {
+        throw new Exception('Login failed');
+    }
+});
+
+$app->post('auth', function ($params, $obj) {
+    $email = $obj->email;
+    $password = $obj->password;
+    unset($obj->password);
+    $user = getOne("select * from users where email=:email", $obj);
+    if (password_verify($password, $user->password)) {
+
+        $paylod = [
+            'iat' => time(),
+            'iss' => 'localhost',
+            'exp' => time() + (10*24*60 * 60),
+            'userId' => $user->id
+        ];
+
+        $token = JWT::encode($paylod, SECRETE_KEY);
+        unset($user->password);
+
+        return array('token'=>$token, 'user'=>$user);
     } else {
         throw new Exception('Login failed');
     }
